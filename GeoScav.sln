@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010 Express for Windows Phone
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeoScav", "GeoScav\GeoScav.csproj", "{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C47BE4F5-07DA-4435-8F2C-0141A692B2CD}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
