@@ -29,6 +29,7 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1">
+            
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -38,12 +39,13 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            
             <Button Content="Register" Grid.Row="0" Height="72" Name="button1" Click="registerPhone"/>
-            <Button Content="Query for Location" Grid.Row="1" Height="72" Name="button2"/>
-            <Button Content="Checkin at Location" Grid.Row="2" Height="72" Name="button3"/>
-            <Button Content="Cancel Last Checkin" Grid.Row="3" Height="72" Name="button4"/>
-            <Button Content="Upload Photo"  Grid.Row="4" Height="72" Name="button5"/>
-            <Button Content="Get Photo" Grid.Row="5" Height="72" Name="button6"/>
+            <Button Content="Query for Location" Grid.Row="1" Height="72"  Click="queryLocation"/>
+            <Button Content="Checkin at Location" Grid.Row="2" Height="72"  Click="checkin"/>
+            <Button Content="Cancel Last Checkin" Grid.Row="3" Height="72"  Click="cancelCheckin"/>
+            <Button Content="Upload Photo"  Grid.Row="4" Height="72"  Click="uploadPhoto"/>
+            <Button Content="Get Photo" Grid.Row="5" Height="72" Click="getPhoto"/>
         </Grid>
     </Grid>
  
