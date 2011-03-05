@@ -20,5 +20,10 @@ namespace GeoScav
         {
             InitializeComponent();
         }
+
+        private void registerPhone(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

@@ -29,13 +29,21 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1">
-
-            <Button Content="Register" Height="72" Name="button1" Width="160" Margin="45,25,275,510" />
-            <Button Content="Query for Location" Height="72" Name="button2" Margin="137,288,36,247" />
-            <Button Content="Checkin at Location" Height="72" Name="button3" Margin="137,103,36,432" />
-            <Button Content="Cancel Last Checkin" Height="72" Name="button4" Margin="45,210,122,325" />
-            <Button Content="Upload Photo" Height="72" Name="button5" Margin="45,423,151,112" />
-            <Button Content="Get Photo" Height="72" Name="button6" Margin="247,501,36,34" />
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Button Content="Register" Grid.Row="0" Height="72" Name="button1" Click="registerPhone"/>
+            <Button Content="Query for Location" Grid.Row="1" Height="72" Name="button2"/>
+            <Button Content="Checkin at Location" Grid.Row="2" Height="72" Name="button3"/>
+            <Button Content="Cancel Last Checkin" Grid.Row="3" Height="72" Name="button4"/>
+            <Button Content="Upload Photo"  Grid.Row="4" Height="72" Name="button5"/>
+            <Button Content="Get Photo" Grid.Row="5" Height="72" Name="button6"/>
         </Grid>
     </Grid>
  
