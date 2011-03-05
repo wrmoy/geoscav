@@ -37,6 +37,8 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
@@ -46,6 +48,12 @@
             <Button Content="Cancel Last Checkin" Grid.Row="3" Height="72"  Click="cancelCheckin"/>
             <Button Content="Upload Photo"  Grid.Row="4" Height="72"  Click="uploadPhoto"/>
             <Button Content="Get Photo" Grid.Row="5" Height="72" Click="getPhoto"/>
+
+
+            <TextBlock Text="Latitude:"  Grid.Row="6"/>
+            <TextBlock Text="Longitude:" Grid.Row="7"/>
+
+
         </Grid>
     </Grid>
  
