@@ -68,7 +68,7 @@ namespace GeoScav
         {
             // Update the map to show the current location
             Location ppLoc = new Location(e.Position.Location.Latitude, e.Position.Location.Longitude);
-            mapMain.SetView(ppLoc, 10);
+            mapMain.SetView(ppLoc, 18);
 
             //update pushpin location and show
             MapLayer.SetPosition(ppLocation, ppLoc);
@@ -112,9 +112,7 @@ namespace GeoScav
                 case GeoPositionStatus.Ready:
                     // The location service is working and is receiving location data
                     // Show the current position and enable the Stop Location button
-                    if (statusText.Visibility == System.Windows.Visibility.Collapsed)
-                        statusText.Visibility = System.Windows.Visibility.Visible;
-                    statusText.Text = "Commander, we have visual contact!";
+                    statusText.Visibility = System.Windows.Visibility.Collapsed;
                     break;
 
             }
