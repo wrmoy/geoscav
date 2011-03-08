@@ -40,39 +40,23 @@ namespace GeoScav
 
             new WebClient().UploadValues("http://www.example.com", values);*/
 
-
+            startButton.Visibility = System.Windows.Visibility.Visible;
+            helpText.Visibility = System.Windows.Visibility.Visible;
+            getPhotoButton.Visibility = System.Windows.Visibility.Visible;
         }
 
 
 
 
-        private void queryLocation(object sender, RoutedEventArgs e)
+        private void openMap(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Uri("/mapQuery.xaml", UriKind.Relative));
-        }
-
-
-        private void checkin(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-
-        private void cancelCheckin(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-
-        private void uploadPhoto(object sender, RoutedEventArgs e)
-        {
-
+            NavigationService.Navigate(new Uri("/MapPage.xaml", UriKind.Relative));
         }
 
 
         private void getPhoto(object sender, RoutedEventArgs e)
         {
-
+            // TODO: get and display a photo
         }
 
 

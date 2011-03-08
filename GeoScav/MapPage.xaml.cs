@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Device.Location;
 using System.Linq;
 using System.Net;
 using System.Windows;
@@ -9,16 +10,28 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using Microsoft.Phone.Controls;
-using System.Device.Location;
 using Microsoft.Maps.MapControl;
+using Microsoft.Phone.Controls;
 
 namespace GeoScav
 {
-    public partial class mapQuery : PhoneApplicationPage
+    public partial class MapPage : PhoneApplicationPage
     {
+        // listens for coordinate changes
         GeoCoordinateWatcher watcher;
-        public mapQuery()
+
+        // current location
+        double curr_lat;
+        double curr_long;
+
+        // current CID
+        int curr_cid;
+
+        // directions to next CID
+        double cid_dist;
+        double cid_angle;
+
+        public MapPage()
         {
             InitializeComponent();
             // Reinitialize the GeoCoordinateWatcher
@@ -66,6 +79,10 @@ namespace GeoScav
         /// <param name="e"></param>
         void MyPositionChanged(GeoPositionChangedEventArgs<GeoCoordinate> e)
         {
+            // Update last location
+            curr_lat = e.Position.Location.Latitude;
+            curr_long = e.Position.Location.Longitude;
+
             // Update the map to show the current location
             Location ppLoc = new Location(e.Position.Location.Latitude, e.Position.Location.Longitude);
             mapMain.SetView(ppLoc, 18);
@@ -126,6 +143,30 @@ namespace GeoScav
             //update pushpin location and show
             MapLayer.SetPosition(ppLocation, ppLoc);
             ppLocation.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        void QueryCidLocation()
+        {
+            // TODO: get location data and put it into cid_dist and cid_angle
+            // call UpdateCid() when new CID data is received
+        }
+
+        void UpdateCid()
+        {
+            var accentBrush = (Brush)Application.Current.Resources["PhoneAccentBrush"];
+
+            var pin = new Pushpin
+            {
+                Location = new Location
+                {
+                    Latitude = (curr_lat + cid_dist * Math.Cos(cid_angle)),
+                    Longitude = (curr_long + cid_dist * Math.Sin(cid_angle))
+                },
+                Background = accentBrush,
+                Content = curr_cid,
+            };
+
+            mapLayer.AddChild(pin, pin.Location);
         }
     }
 }

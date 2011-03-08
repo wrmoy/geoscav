@@ -1,5 +1,5 @@
 ﻿<phone:PhoneApplicationPage 
-    x:Class="GeoScav.mapQuery"
+    x:Class="GeoScav.MapPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:m="clr-namespace:Microsoft.Maps.MapControl;assembly=Microsoft.Maps.MapControl"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -28,11 +28,34 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-            <m:Map Name="mapMain" NavigationVisibility="Collapsed" Mode="AerialWithLabels" CredentialsProvider="ApXw1_p4abRAyITXFZGy6IvPyUN05hwF08hfkkNMUfExuujgB-XpmebygnDRH1RA">
-                <m:MapLayer Name="lMain">
-                    <Ellipse Width="14" Height="14" m:MapLayer.Position="0,0" Name="ppLocation" Visibility="Collapsed" Fill="PowderBlue"></Ellipse>
+            <m:Map Name="mapMain"
+                   NavigationVisibility="Collapsed" 
+                   Mode="AerialWithLabels" 
+                   CredentialsProvider="ApXw1_p4abRAyITXFZGy6IvPyUN05hwF08hfkkNMUfExuujgB-XpmebygnDRH1RA"
+                   >
+                <m:MapLayer Name="mapLayer">
+                    <Ellipse Name="ppLocation" 
+                        Width="14" 
+                        Height="14" 
+                        m:MapLayer.Position="0,0" 
+                        Fill="PowderBlue"
+                        Visibility="Collapsed"
+                     />
                 </m:MapLayer>
-                <TextBlock Name="statusText" Foreground="White" Text="Status" Margin="20 -5 0 0" Visibility="Collapsed"/>
+                <TextBlock Name="statusText"
+                     Foreground="White"
+                     Text="Status" 
+                     Margin="20 -5 0 0" 
+                     Visibility="Collapsed"
+                />
+                <TextBlock Name="infoText"
+                     Foreground="White"
+                     Text="Information"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Margin="0 50 0 0"
+                     Visibility="Collapsed"
+                />
             </m:Map>
         </Grid>
     </Grid>

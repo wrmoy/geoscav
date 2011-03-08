@@ -35,24 +35,13 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <Button Content="Register" Grid.Row="0" Height="72" Name="button1" Click="registerPhone"/>
-            <Button Content="Query for Location" Grid.Row="1" Height="72"  Click="queryLocation"/>
-            <Button Content="Checkin at Location" Grid.Row="2" Height="72"  Click="checkin"/>
-            <Button Content="Cancel Last Checkin" Grid.Row="3" Height="72"  Click="cancelCheckin"/>
-            <Button Content="Upload Photo"  Grid.Row="4" Height="72"  Click="uploadPhoto"/>
-            <Button Content="Get Photo" Grid.Row="5" Height="72" Click="getPhoto"/>
-
-
-            <TextBlock Text="Latitude:"  Grid.Row="6"/>
-            <TextBlock Text="Longitude:" Grid.Row="7"/>
-
+            <Button Content="Register" Grid.Row="0" Height="72" Name="registerButton" Click="registerPhone"/>
+            <Button Content="Start Game" Grid.Row="1" Height="72"  Name="startButton" Click="openMap"/>
+            <TextBlock Text="Need help?" Grid.Row="2" Name="helpText" Visibility="Collapsed" HorizontalAlignment="Center"/>
+            <Button Content="Get Photo" Grid.Row="3" Name="getPhotoButton" Height="72" Visibility="Collapsed" Click="getPhoto"/>
 
         </Grid>
     </Grid>
