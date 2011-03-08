@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
+using Microsoft.Phone.Info;
 using Microsoft.Phone.Tasks;
 using Microsoft.Phone.Reactive;
 
@@ -33,6 +34,8 @@ namespace GeoScav
 
         private void registerPhone(object sender, RoutedEventArgs e)
         {
+            // this is the phone's "name"
+            var phoneID = DeviceExtendedProperties.GetValue("DeviceUniqueId");
 
             /*var values = new NameValueCollection();
             values.Add("param1", "value1");

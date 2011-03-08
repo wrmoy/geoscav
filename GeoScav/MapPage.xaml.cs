@@ -168,5 +168,10 @@ namespace GeoScav
 
             mapLayer.AddChild(pin, pin.Location);
         }
+
+        void DisplayInfoText(String s)
+        {
+            infoText.Text = s;
+        }
     }
 }
