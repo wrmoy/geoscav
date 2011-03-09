@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Info;
 using Microsoft.Phone.Tasks;
-using Microsoft.Phone.Reactive;
+using Microsoft.Phone.Reactive; 
 
 namespace GeoScav
 {
@@ -37,17 +37,15 @@ namespace GeoScav
             // this is the phone's "name"
             var phoneID = DeviceExtendedProperties.GetValue("DeviceUniqueId");
 
-            /*var values = new NameValueCollection();
-            values.Add("param1", "value1");
-            values.Add("param2", "value2");
-
-            new WebClient().UploadValues("http://www.example.com", values);*/
-
             startButton.Visibility = System.Windows.Visibility.Visible;
             helpText.Visibility = System.Windows.Visibility.Visible;
             getPhotoButton.Visibility = System.Windows.Visibility.Visible;
-        }
 
+           // getResults("http://cs176b.heroku.com/register?name=winblowz&registration_id=thisIsGarbage&phonetype=windows");
+
+
+
+        }
 
 
 
@@ -63,5 +61,11 @@ namespace GeoScav
         }
 
 
+
+
+
+
     }
+
+
 }

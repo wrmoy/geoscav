@@ -35,6 +35,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
@@ -42,7 +43,7 @@
             <Button Content="Start Game" Grid.Row="1" Height="72"  Name="startButton" Click="openMap"/>
             <TextBlock Text="Need help?" Grid.Row="2" Name="helpText" Visibility="Collapsed" HorizontalAlignment="Center"/>
             <Button Content="Get Photo" Grid.Row="3" Name="getPhotoButton" Height="72" Visibility="Collapsed" Click="getPhoto"/>
-
+            <TextBlock Text="Debug TextBlock" Grid.Row="4" Name="debug" HorizontalAlignment="Center"/>
         </Grid>
     </Grid>
  
