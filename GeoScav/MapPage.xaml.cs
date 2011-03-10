@@ -27,7 +27,7 @@ namespace GeoScav
         double curr_long;
 
         // current CID
-        int curr_cid;
+        int curr_cid = 1;
 
         // coords of next check-in point
         double cid_lat;
@@ -35,6 +35,9 @@ namespace GeoScav
 
         // boolean that holds whether or not the player is within check-in range
         bool isWithinRange = false;
+
+        // boolean that holds whether or not the player has taken a picture
+        bool pictureTaken = false;
 
         public MapPage()
         {
@@ -154,7 +157,6 @@ namespace GeoScav
         // Only updates check-in info (cid_dist, cid_angle, curr_cid)
         void QueryCidLocation()
         {
-            curr_cid++;
             // TODO: update the cid_dist and cid_angle
             double cid_dist = 0;
             double cid_angle = 0;
@@ -187,23 +189,28 @@ namespace GeoScav
         // check if the player is within range of the next check-in point
         void ProximityCheck()
         {
-            // only with we're within distance, continue
+            // if we're not within distance, return
             if (Math.Sqrt(Math.Pow(curr_lat - cid_lat, 2) + Math.Pow(curr_long - cid_long, 2)) > 0.0001)
             {
                 isWithinRange = false;
                 return;
             }
-            // set the bool
-            isWithinRange = true;
-            // open the check-in button
-            DisplayInfoText("You're within check-in distance!", 10);
-            checkInButton.Visibility = System.Windows.Visibility.Visible;
-            getPicButton.Visibility = System.Windows.Visibility.Visible;
-            takePicButton.Visibility = System.Windows.Visibility.Visible;
+            // if we were not previously in range, open the check-in buttons
+            if (!isWithinRange)
+            {
+                isWithinRange = true;
+                // open the check-in buttons
+                DisplayInfoText("You're within check-in distance!", 10);
+                checkInButton.Visibility = System.Windows.Visibility.Visible;
+                checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
+                getPicButton.Visibility = System.Windows.Visibility.Visible;
+                takePicButton.Visibility = System.Windows.Visibility.Visible;
+            }
+            // otherwise, we don't want to open the buttons again
         }
 
         // check-in procedures
-        void checkIn()
+        void checkIn(object sender, RoutedEventArgs e)
         {
             checkInButton.Visibility = System.Windows.Visibility.Collapsed;
             checkOutButton.Visibility = System.Windows.Visibility.Visible;
@@ -213,6 +220,42 @@ namespace GeoScav
             // do check-in with the server
         }
 
+        // check-out procedures
+        void checkOut(object sender, RoutedEventArgs e)
+        {
+            // if the player has taken a picture, then go to the next checkpoint
+            if (pictureTaken)
+            {
+                // update cid and next chkpt
+                curr_cid++;
+                QueryCidLocation();
+                // close and reset the buttons
+                checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
+                getPicButton.Visibility = System.Windows.Visibility.Collapsed;
+                takePicButton.Visibility = System.Windows.Visibility.Collapsed;
+                getPicButton.IsEnabled = false;
+                takePicButton.IsEnabled = false;
+                // reset the bool
+                pictureTaken = false;
+            }
+            else // restart the "asking for check-in" process
+            {
+                isWithinRange = false;
+                ProximityCheck();
+            }
+        }
+
+        void getPic(object sender, RoutedEventArgs e)
+        {
+            // get picture URL from server
+            // display it in a popup?
+            Popup imgdisp = new Popup();
+        }
+
+        void takePic(object sender, RoutedEventArgs e)
+        {
+            // take picture
+        }
 
         // Async display of info text
         void DisplayInfoText(String text, int durationSec)
