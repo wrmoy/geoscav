@@ -1,7 +1,7 @@
 ﻿<phone:PhoneApplicationPage 
     x:Class="GeoScav.MapPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:m="clr-namespace:Microsoft.Maps.MapControl;assembly=Microsoft.Maps.MapControl"
+    xmlns:m="clr-namespace:Microsoft.Phone.Controls.Maps;assembly=Microsoft.Phone.Controls.Maps"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
     xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
@@ -30,19 +30,13 @@
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
             <m:Map Name="mapMain"
                    CredentialsProvider="AnXly7FRcq41A5XXI8mcngsEsPndN-gqbzs0BlK6gCwBfnf9ONdGZBgqb6bWSbaQ"
-                   NavigationVisibility="Collapsed" 
                    Mode="AerialWithLabels" 
                    ScaleVisibility="Collapsed"
                    CopyrightVisibility="Collapsed"
                    >
-                <m:MapLayer Name="mapLayer">
-                    <Ellipse Name="ppLocation" 
-                             Width="14" 
-                             Height="14" 
-                             m:MapLayer.Position="0,0" 
-                             Fill="PowderBlue"
-                             Visibility="Collapsed"
-                     />
+                <m:MapLayer Name="youLayer">
+                </m:MapLayer>
+                <m:MapLayer Name="pinLayer">
                 </m:MapLayer>
                 <TextBlock Name="statusText"
                            Foreground="White"

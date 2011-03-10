@@ -39,7 +39,7 @@ namespace GeoScav
         {
             InitializeComponent();
 
-            rid = NotificationClient.Current.Connect();
+//            rid = NotificationClient.Current.Connect();
             
    
         }

@@ -23,6 +23,9 @@ namespace GeoScav
         /// <returns>The root frame of the Phone Application.</returns>
         public PhoneApplicationFrame RootFrame { get; private set; }
 
+        // Bing Maps key
+        internal const string Id = "AnXly7FRcq41A5XXI8mcngsEsPndN-gqbzs0BlK6gCwBfnf9ONdGZBgqb6bWSbaQ";
+
         /// <summary>
         /// Constructor for the Application object.
         /// </summary>

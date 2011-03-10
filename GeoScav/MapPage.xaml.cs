@@ -14,8 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using Microsoft.Maps.MapControl;
 using Microsoft.Phone.Controls;
+using Microsoft.Phone.Controls.Maps;
 using Microsoft.Phone;
 using Microsoft.Phone.Tasks;
 
@@ -48,6 +48,9 @@ namespace GeoScav
 
         // last picture taken
         private Stream lastPic;
+
+        // Credentials
+        private readonly CredentialsProvider _credentialsProvider = new ApplicationIdCredentialsProvider(App.Id);
 
         public MapPage()
         {
@@ -107,12 +110,21 @@ namespace GeoScav
             curr_long = e.Position.Location.Longitude;
 
             // Update the map to show the current location
-            Location ppLoc = new Location(e.Position.Location.Latitude, e.Position.Location.Longitude);
+            var ppLoc = new GeoCoordinate(e.Position.Location.Latitude, e.Position.Location.Longitude);
             mapMain.SetView(ppLoc, 18);
 
             //update pushpin location and show
-            MapLayer.SetPosition(ppLocation, ppLoc);
-            ppLocation.Visibility = System.Windows.Visibility.Visible;
+            youLayer.Children.Clear();
+            var pin = new Pushpin
+            {
+                Location = new GeoCoordinate
+                {
+                    Latitude = curr_lat,
+                    Longitude = curr_long
+                },
+                Content = "You",
+            };
+            youLayer.AddChild(new Pushpin(), ppLoc);
 
             // Check if the check-in point is in range
             ProximityCheck();
@@ -169,12 +181,8 @@ namespace GeoScav
 
         private void ResetMap()
         {
-            Location ppLoc = new Location(0, 0);
-            mapMain.SetView(ppLoc, 1);
-
-            //update pushpin location and show
-            MapLayer.SetPosition(ppLocation, ppLoc);
-            ppLocation.Visibility = System.Windows.Visibility.Collapsed;
+            mapMain.SetView(new GeoCoordinate(34.41237775, -119.86041103), 1);
+            youLayer.Children.Clear();
         }
 
         // Only updates check-in info (cid_dist, cid_angle, curr_cid)
@@ -194,7 +202,7 @@ namespace GeoScav
             // create new pushpin
             var pin = new Pushpin
             {
-                Location = new Location
+                Location = new GeoCoordinate
                 {
                     Latitude = curr_lat + cid_dist * Math.Cos(cid_angle),
                     Longitude = curr_long + cid_dist * Math.Sin(cid_angle)
@@ -203,7 +211,7 @@ namespace GeoScav
                 Content = curr_cid,
             };
             // add it to the map
-            mapLayer.AddChild(pin, pin.Location);
+            pinLayer.AddChild(pin, pin.Location);
             // update internal variables
             cid_lat = curr_lat + cid_dist * Math.Cos(cid_angle);
             cid_long = curr_long + cid_dist * Math.Sin(cid_angle);
@@ -241,6 +249,7 @@ namespace GeoScav
             takePicButton.IsEnabled = true;
 
             // do check-in with the server
+            // TODO
         }
 
         // check-out procedures
@@ -277,6 +286,9 @@ namespace GeoScav
         {
             // get picture URL from server
             // display it in a popup?
+            // TODO
+            DisplayInfoText("Grabbing image from server...", 3);
+            DisplayImg("http://www.google.com/images/logos/ps_logo2.png", 5);
         }
 
         private void takePic(object sender, RoutedEventArgs e)
@@ -334,10 +346,9 @@ namespace GeoScav
         }
 
         // Async image display
-        void DisplayImg(Stream pic, int durationSec)
+        void DisplayImg(String imgUri, int durationSec)
         {
-            BitmapImage tempimg = new BitmapImage();
-            tempimg.SetSource(pic);
+            BitmapImage tempimg = new BitmapImage(new Uri(imgUri));
             photoPreview.Source = tempimg;
             photoPreview.Visibility = System.Windows.Visibility.Visible;
 
