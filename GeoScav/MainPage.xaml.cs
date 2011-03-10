@@ -17,6 +17,9 @@ using Microsoft.Phone.Info;
 using Microsoft.Phone.Tasks;
 using Microsoft.Phone.Reactive;
 using Newtonsoft.Json;
+using Microsoft.Phone.Notification;
+using System.Windows.Threading;
+
 
 namespace GeoScav
 {
@@ -27,17 +30,20 @@ namespace GeoScav
     {
 
         private string token;
-        static int test = 015;
+        static int test = 020;
         static string name = "bdwm-win-test-name-test-" + test;
-        static string rid = "bdwm-win-test-rid-test-" + test;
+        string rid;
 
         // Constructor
         public MainPage()
         {
             InitializeComponent();
+
+            rid = NotificationClient.Current.Connect();
+            
+   
         }
 
-        
 
 
 
@@ -79,14 +85,11 @@ namespace GeoScav
         }
 
 
-
-
         private void openMap(object sender, RoutedEventArgs e)
         {
            NavigationService.Navigate(new Uri(string.Format("/MapPage.xaml?token={0}", token), UriKind.Relative)); 
            // NavigationService.Navigate(new Uri("/MapPage.xaml", UriKind.Relative));
         }
-
 
 
 
