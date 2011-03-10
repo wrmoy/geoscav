@@ -27,7 +27,7 @@ namespace GeoScav
     {
 
         private string token;
-        static int test = 013;
+        static int test = 015;
         static string name = "bdwm-win-test-name-test-" + test;
         static string rid = "bdwm-win-test-rid-test-" + test;
 

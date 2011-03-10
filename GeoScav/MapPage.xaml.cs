@@ -20,6 +20,9 @@ namespace GeoScav
 {
     public partial class MapPage : PhoneApplicationPage
     {
+        // token parameter to use for server interactions
+        string token;
+
         // listens for coordinate changes
         GeoCoordinateWatcher watcher;
 
@@ -40,12 +43,9 @@ namespace GeoScav
         // boolean that holds whether or not the player has taken a picture
         bool pictureTaken = false;
 
-        string token;
-
         public MapPage()
         {
             InitializeComponent();
-    //        this.OnNavigatedTo += new RoutedEventHandler(OnNavigatedTo);
            
             // Reinitialize the GeoCoordinateWatcher
             watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
@@ -152,12 +152,12 @@ namespace GeoScav
 
         protected override void  OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
- 	                base.OnNavigatedTo(e);
+            base.OnNavigatedTo(e);
 
-             if (this.NavigationContext.QueryString.ContainsKey("token"))
-             {
-                 token = this.NavigationContext.QueryString["token"];
-             }
+            if (this.NavigationContext.QueryString.ContainsKey("token"))
+            {
+                token = this.NavigationContext.QueryString["token"];
+            }
 
         }
     
@@ -240,7 +240,7 @@ namespace GeoScav
         // check-out procedures
         void checkOut(object sender, RoutedEventArgs e)
         {
-            // if the player has taken a picture, then go to the next checkpoint
+            // if the player has taken a picture, then get next checkpoint
             if (pictureTaken)
             {
                 // update cid and next chkpt
