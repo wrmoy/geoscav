@@ -57,7 +57,7 @@ namespace GeoScav
             startButton.IsEnabled = true;
 
 
-           send("http://cs176b.heroku.com/register?name=" + test + "&registration_id=" + rid + "&phonetype=windows");
+//           send("http://cs176b.heroku.com/register?name=" + test + "&registration_id=" + rid + "&phonetype=windows");
 
         }
 

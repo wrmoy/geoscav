@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Device.Location;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows;
@@ -9,44 +10,48 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Maps.MapControl;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone;
+using Microsoft.Phone.Tasks;
 
 namespace GeoScav
 {
     public partial class MapPage : PhoneApplicationPage
     {
         // token parameter to use for server interactions
-        string token;
+        private string token;
 
         // listens for coordinate changes
-        GeoCoordinateWatcher watcher;
+        private GeoCoordinateWatcher watcher;
 
         // current location
-        double curr_lat;
-        double curr_long;
+        private double curr_lat;
+        private double curr_long;
 
         // current CID
-        int curr_cid = 1;
+        private int curr_cid = 1;
 
         // coords of next check-in point
-        double cid_lat;
-        double cid_long;
+        private double cid_lat;
+        private double cid_long;
 
         // boolean that holds whether or not the player is within check-in range
-        bool isWithinRange = false;
+        private bool isWithinRange = false;
 
         // boolean that holds whether or not the player has taken a picture
-        bool pictureTaken = false;
+        private bool pictureTaken = false;
+
+        // last picture taken
+        private Stream lastPic;
 
         public MapPage()
         {
             InitializeComponent();
-           
             // Reinitialize the GeoCoordinateWatcher
             watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
             watcher.MovementThreshold = 5;//distance in metres
@@ -55,11 +60,12 @@ namespace GeoScav
             watcher.StatusChanged += new EventHandler<GeoPositionStatusChangedEventArgs>(watcher_StatusChanged);
             watcher.PositionChanged += new EventHandler<GeoPositionChangedEventArgs<GeoCoordinate>>(watcher_PositionChanged);
 
-            // Ask for next check-in point
-            QueryCidLocation();
-
             // Start data acquisition
             watcher.Start();
+
+            // Ask for next check-in point
+            DisplayInfoText("Retrieving first checkpoint", 10);
+            QueryCidLocationWithWait(10);
         }
 
 
@@ -94,7 +100,7 @@ namespace GeoScav
         /// Custom method called from the PositionChanged event handler
         /// </summary>
         /// <param name="e"></param>
-        void MyPositionChanged(GeoPositionChangedEventArgs<GeoCoordinate> e)
+        private void MyPositionChanged(GeoPositionChangedEventArgs<GeoCoordinate> e)
         {
             // Update last location
             curr_lat = e.Position.Location.Latitude;
@@ -116,7 +122,7 @@ namespace GeoScav
         /// Custom method called from the StatusChanged event handler
         /// </summary>
         /// <param name="e"></param>
-        void MyStatusChanged(GeoPositionStatusChangedEventArgs e)
+        private void MyStatusChanged(GeoPositionStatusChangedEventArgs e)
         {
             switch (e.Status)
             {
@@ -160,8 +166,8 @@ namespace GeoScav
             }
 
         }
-    
-        void ResetMap()
+
+        private void ResetMap()
         {
             Location ppLoc = new Location(0, 0);
             mapMain.SetView(ppLoc, 1);
@@ -172,7 +178,7 @@ namespace GeoScav
         }
 
         // Only updates check-in info (cid_dist, cid_angle, curr_cid)
-        void QueryCidLocation()
+        private void QueryCidLocation()
         {
             // TODO: update the cid_dist and cid_angle
             double cid_dist = 0;
@@ -181,7 +187,7 @@ namespace GeoScav
         }
 
         // add a new pushpin where the next check-in point is
-        void AddCheckInPoint(double cid_dist, double cid_angle)
+        private void AddCheckInPoint(double cid_dist, double cid_angle)
         {
             // color
             var accentBrush = (Brush)Application.Current.Resources["PhoneAccentBrush"];
@@ -204,7 +210,7 @@ namespace GeoScav
         }
 
         // check if the player is within range of the next check-in point
-        void ProximityCheck()
+        private void ProximityCheck()
         {
             // if we're not within distance, return
             if (Math.Sqrt(Math.Pow(curr_lat - cid_lat, 2) + Math.Pow(curr_long - cid_long, 2)) > 0.0001)
@@ -227,7 +233,7 @@ namespace GeoScav
         }
 
         // check-in procedures
-        void checkIn(object sender, RoutedEventArgs e)
+        private void checkIn(object sender, RoutedEventArgs e)
         {
             checkInButton.Visibility = System.Windows.Visibility.Collapsed;
             checkOutButton.Visibility = System.Windows.Visibility.Visible;
@@ -238,7 +244,7 @@ namespace GeoScav
         }
 
         // check-out procedures
-        void checkOut(object sender, RoutedEventArgs e)
+        private void checkOut(object sender, RoutedEventArgs e)
         {
             // if the player has taken a picture, then get next checkpoint
             if (pictureTaken)
@@ -257,21 +263,39 @@ namespace GeoScav
             }
             else // restart the "asking for check-in" process
             {
-                isWithinRange = false;
+                checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
+                checkInButton.Visibility = System.Windows.Visibility.Visible;
+                getPicButton.IsEnabled = false;
+                takePicButton.IsEnabled = false;
                 ProximityCheck();
             }
+            // and then check out from the server
+            //
         }
 
-        void getPic(object sender, RoutedEventArgs e)
+        private void getPic(object sender, RoutedEventArgs e)
         {
             // get picture URL from server
             // display it in a popup?
-            Popup imgdisp = new Popup();
         }
 
-        void takePic(object sender, RoutedEventArgs e)
+        private void takePic(object sender, RoutedEventArgs e)
         {
             // take picture
+            CameraCaptureTask camera = new CameraCaptureTask();
+            camera.Show();
+            camera.Completed += cameraTaskComplete;
+        }
+
+        private void cameraTaskComplete(object sender, PhotoResult e)
+        {
+            if (e.TaskResult == TaskResult.OK)
+            {
+                pictureTaken = true;
+                lastPic = e.ChosenPhoto;
+                // then upload image to server
+                // TODO
+            }
         }
 
         // Async display of info text
@@ -285,6 +309,43 @@ namespace GeoScav
                 delegate(object s, EventArgs args)
                 {
                     infoText.Visibility = System.Windows.Visibility.Collapsed;
+                    timer.Stop();
+                };
+
+            timer.Interval = new TimeSpan(0, 0, durationSec); // durationSec * 1sec
+            timer.Start();
+        }
+
+        // Async checkpoint query
+        void QueryCidLocationWithWait(int durationSec)
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+
+            timer.Tick +=
+                delegate(object s, EventArgs args)
+                {
+                    QueryCidLocation();
+                    ProximityCheck();
+                    timer.Stop();
+                };
+
+            timer.Interval = new TimeSpan(0, 0, durationSec); // durationSec * 1sec
+            timer.Start();
+        }
+
+        // Async image display
+        void DisplayImg(Stream pic, int durationSec)
+        {
+            BitmapImage tempimg = new BitmapImage();
+            tempimg.SetSource(pic);
+            photoPreview.Source = tempimg;
+            photoPreview.Visibility = System.Windows.Visibility.Visible;
+
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Tick +=
+                delegate(object s, EventArgs args)
+                {
+                    photoPreview.Visibility = System.Windows.Visibility.Collapsed;
                     timer.Stop();
                 };
 

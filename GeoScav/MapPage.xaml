@@ -29,9 +29,11 @@
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
             <m:Map Name="mapMain"
+                   CredentialsProvider="AnXly7FRcq41A5XXI8mcngsEsPndN-gqbzs0BlK6gCwBfnf9ONdGZBgqb6bWSbaQ"
                    NavigationVisibility="Collapsed" 
                    Mode="AerialWithLabels" 
-                   CredentialsProvider="ApXw1_p4abRAyITXFZGy6IvPyUN05hwF08hfkkNMUfExuujgB-XpmebygnDRH1RA"
+                   ScaleVisibility="Collapsed"
+                   CopyrightVisibility="Collapsed"
                    >
                 <m:MapLayer Name="mapLayer">
                     <Ellipse Name="ppLocation" 
@@ -96,6 +98,9 @@
                     />
                 </Grid>
             </m:Map>
+            <Image Name="photoPreview"
+                   Visibility="Collapsed"
+                   />
         </Grid>
     </Grid>
 
