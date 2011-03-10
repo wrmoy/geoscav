@@ -5,11 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Microsoft.Maps.MapControl;
 using Microsoft.Phone.Controls;
 
@@ -27,13 +29,17 @@ namespace GeoScav
         // current CID
         int curr_cid;
 
-        // directions to next CID
-        double cid_dist;
-        double cid_angle;
+        // coords of next check-in point
+        double cid_lat;
+        double cid_long;
+
+        // boolean that holds whether or not the player is within check-in range
+        bool isWithinRange = false;
 
         public MapPage()
         {
             InitializeComponent();
+
             // Reinitialize the GeoCoordinateWatcher
             watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
             watcher.MovementThreshold = 5;//distance in metres
@@ -41,6 +47,9 @@ namespace GeoScav
             // Add event handlers for StatusChanged and PositionChanged events
             watcher.StatusChanged += new EventHandler<GeoPositionStatusChangedEventArgs>(watcher_StatusChanged);
             watcher.PositionChanged += new EventHandler<GeoPositionChangedEventArgs<GeoCoordinate>>(watcher_PositionChanged);
+
+            // Ask for next check-in point
+            QueryCidLocation();
 
             // Start data acquisition
             watcher.Start();
@@ -91,8 +100,8 @@ namespace GeoScav
             MapLayer.SetPosition(ppLocation, ppLoc);
             ppLocation.Visibility = System.Windows.Visibility.Visible;
 
-            // redraw check-in point
-            // TODO
+            // Check if the check-in point is in range
+            ProximityCheck();
         }
 
         /// <summary>
@@ -106,22 +115,19 @@ namespace GeoScav
                 case GeoPositionStatus.Disabled:
                     // The location service is disabled or unsupported.
                     // Alert the user
-                    if (statusText.Visibility == System.Windows.Visibility.Collapsed)
-                        statusText.Visibility = System.Windows.Visibility.Visible;
+                    statusText.Visibility = System.Windows.Visibility.Visible;
                     statusText.Text = "Geolocation disabled: can't find you";
                     break;
                 case GeoPositionStatus.Initializing:
                     // The location service is initializing.
                     // Disable the Start Location button
-                    if (statusText.Visibility == System.Windows.Visibility.Collapsed)
-                        statusText.Visibility = System.Windows.Visibility.Visible;
+                    statusText.Visibility = System.Windows.Visibility.Visible;
                     statusText.Text = "Initializing geolocation...";
                     break;
                 case GeoPositionStatus.NoData:
                     // The location service is working, but it cannot get location data
                     // Alert the user and enable the Stop Location button
-                    if (statusText.Visibility == System.Windows.Visibility.Collapsed)
-                        statusText.Visibility = System.Windows.Visibility.Visible;
+                    statusText.Visibility = System.Windows.Visibility.Visible;
                     statusText.Text = "No geolocation data, are you indoors?";
                     ResetMap();
 
@@ -145,33 +151,85 @@ namespace GeoScav
             ppLocation.Visibility = System.Windows.Visibility.Collapsed;
         }
 
+        // Only updates check-in info (cid_dist, cid_angle, curr_cid)
         void QueryCidLocation()
         {
-            // TODO: get location data and put it into cid_dist and cid_angle
-            // call UpdateCid() when new CID data is received
+            curr_cid++;
+            // TODO: update the cid_dist and cid_angle
+            double cid_dist = 0;
+            double cid_angle = 0;
+            AddCheckInPoint(cid_dist, cid_angle);
         }
 
-        void UpdateCid()
+        // add a new pushpin where the next check-in point is
+        void AddCheckInPoint(double cid_dist, double cid_angle)
         {
+            // color
             var accentBrush = (Brush)Application.Current.Resources["PhoneAccentBrush"];
-
+            // create new pushpin
             var pin = new Pushpin
             {
                 Location = new Location
                 {
-                    Latitude = (curr_lat + cid_dist * Math.Cos(cid_angle)),
-                    Longitude = (curr_long + cid_dist * Math.Sin(cid_angle))
+                    Latitude = curr_lat + cid_dist * Math.Cos(cid_angle),
+                    Longitude = curr_long + cid_dist * Math.Sin(cid_angle)
                 },
                 Background = accentBrush,
                 Content = curr_cid,
             };
-
+            // add it to the map
             mapLayer.AddChild(pin, pin.Location);
+            // update internal variables
+            cid_lat = curr_lat + cid_dist * Math.Cos(cid_angle);
+            cid_long = curr_long + cid_dist * Math.Sin(cid_angle);
         }
 
-        void DisplayInfoText(String s)
+        // check if the player is within range of the next check-in point
+        void ProximityCheck()
         {
-            infoText.Text = s;
+            // only with we're within distance, continue
+            if (Math.Sqrt(Math.Pow(curr_lat - cid_lat, 2) + Math.Pow(curr_long - cid_long, 2)) > 0.0001)
+            {
+                isWithinRange = false;
+                return;
+            }
+            // set the bool
+            isWithinRange = true;
+            // open the check-in button
+            DisplayInfoText("You're within check-in distance!", 10);
+            checkInButton.Visibility = System.Windows.Visibility.Visible;
+            getPicButton.Visibility = System.Windows.Visibility.Visible;
+            takePicButton.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        // check-in procedures
+        void checkIn()
+        {
+            checkInButton.Visibility = System.Windows.Visibility.Collapsed;
+            checkOutButton.Visibility = System.Windows.Visibility.Visible;
+            getPicButton.IsEnabled = true;
+            takePicButton.IsEnabled = true;
+
+            // do check-in with the server
+        }
+
+
+        // Async display of info text
+        void DisplayInfoText(String text, int durationSec)
+        {
+            infoText.Text = text;
+            infoText.Visibility = System.Windows.Visibility.Visible;
+            DispatcherTimer timer = new DispatcherTimer();
+
+            timer.Tick +=
+                delegate(object s, EventArgs args)
+                {
+                    infoText.Visibility = System.Windows.Visibility.Collapsed;
+                    timer.Stop();
+                };
+
+            timer.Interval = new TimeSpan(0, 0, durationSec); // durationSec * 1sec
+            timer.Start();
         }
     }
 }

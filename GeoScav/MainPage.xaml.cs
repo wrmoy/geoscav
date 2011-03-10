@@ -37,13 +37,12 @@ namespace GeoScav
             // this is the phone's "name"
             var phoneID = DeviceExtendedProperties.GetValue("DeviceUniqueId");
 
-            startButton.Visibility = System.Windows.Visibility.Visible;
-            helpText.Visibility = System.Windows.Visibility.Visible;
-            getPhotoButton.Visibility = System.Windows.Visibility.Visible;
+            // should actually wait for "GAMEON" message before enabling the button
+            // but for now, just turn it on
+            startButton.IsEnabled = true;
+
 
            // getResults("http://cs176b.heroku.com/register?name=winblowz&registration_id=thisIsGarbage&phonetype=windows");
-
-
 
         }
 
@@ -53,16 +52,6 @@ namespace GeoScav
         {
             NavigationService.Navigate(new Uri("/MapPage.xaml", UriKind.Relative));
         }
-
-
-        private void getPhoto(object sender, RoutedEventArgs e)
-        {
-            // TODO: get and display a photo
-        }
-
-
-
-
 
 
     }

@@ -35,27 +35,66 @@
                    >
                 <m:MapLayer Name="mapLayer">
                     <Ellipse Name="ppLocation" 
-                        Width="14" 
-                        Height="14" 
-                        m:MapLayer.Position="0,0" 
-                        Fill="PowderBlue"
-                        Visibility="Collapsed"
+                             Width="14" 
+                             Height="14" 
+                             m:MapLayer.Position="0,0" 
+                             Fill="PowderBlue"
+                             Visibility="Collapsed"
                      />
                 </m:MapLayer>
                 <TextBlock Name="statusText"
-                     Foreground="White"
-                     Text="Status" 
-                     Margin="20 -5 0 0" 
-                     Visibility="Collapsed"
+                           Foreground="White"
+                           Text="Status" 
+                           Margin="20 -5 0 0" 
+                           Visibility="Collapsed"
                 />
                 <TextBlock Name="infoText"
-                     Foreground="White"
-                     Text="Information"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     Margin="0 50 0 0"
-                     Visibility="Collapsed"
+                           Foreground="White"
+                           Text="Information"
+                           FontSize="20"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0 50 0 0"
+                           Visibility="Collapsed"
                 />
+                <Grid Name="ButtonGrid"
+                      VerticalAlignment="Bottom"
+                      Background="Transparent">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Button Name="checkInButton" 
+                            Content="Check In"
+                            Grid.Row="0"
+                            Visibility="Collapsed" 
+                            Click="checkIn"
+                            IsEnabled="True"
+                    />
+                    <Button Name="checkOutButton" 
+                            Content="Check Out"
+                            Grid.Row="0"
+                            Visibility="Collapsed" 
+                            Click="checkOut"
+                            IsEnabled="True"
+                    />
+                    <Button Name="getPicButton"
+                            Content="Need a Hint?"
+                            Grid.Row="1"
+                            Visibility="Collapsed"
+                            Click="getPic"
+                            IsEnabled="False"
+                    />
+                    <Button Name="takePicButton"
+                            Content="Take a Picture"
+                            Grid.Row="2"
+                            Visibility="Collapsed"
+                            Click="takePic"
+                            IsEnabled="False"
+                    />
+                </Grid>
             </m:Map>
         </Grid>
     </Grid>
