@@ -36,12 +36,16 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
             <Button Content="Register" Grid.Row="0" Height="72" Name="registerButton" Click="registerPhone"/>
             <Button Content="Start Game" Grid.Row="1" Height="72"  Name="startButton" Click="openMap" IsEnabled="False"/>
-            <TextBlock Text="Debug TextBlock" Grid.Row="4" Name="debug" HorizontalAlignment="Center"/>
+            <TextBlock Text="Code" Grid.Row="4" Name="Code" HorizontalAlignment="Center"/>
+            <TextBlock Text="Message" Grid.Row="5" Name="Message" HorizontalAlignment="Center"/>
+            <TextBlock Text="Token" Grid.Row="6" Name="Token" HorizontalAlignment="Center"/>
         </Grid>
     </Grid>
  

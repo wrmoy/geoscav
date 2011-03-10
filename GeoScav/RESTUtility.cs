@@ -37,11 +37,13 @@ namespace GeoScav
 
     public class RESTUtility
     {
-        item deserializedJSON;
-        bool isReady;
+        public item deserializedJSON;
+        bool isReady = false;
+        public bool isInitialized;
 
-        RESTUtility()
+        public RESTUtility()
         {
+            isInitialized = true;
             deserializedJSON = null;
             isReady = false;
         }
@@ -50,28 +52,30 @@ namespace GeoScav
         public void send(string url)
         {
             WebClient c = new WebClient();
+            c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadStringCompleted);
             c.DownloadStringAsync(new Uri(url));
-            c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(c_DownloadStringCompleted);
+         //   c.UploadStringCompleted += new UploadStringCompletedEventHandler(c_UploadStringCompleted);
+        //   c.UploadStringAsync(new Uri(url), "");
         }
         
+
+
         /* parses the JSON response from the server */
-        void c_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        public void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
-            lock (this)
-            {
-                deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
                 isReady = true;
-            }
+                deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+                
         }
 
         /* returns the status object */
-        public status status()
+        public status getStatus()
         {
             return deserializedJSON.status;
         }
 
         /* returns the response object */
-        public response response()
+        public response getResponse()
         {
             return deserializedJSON.response;
         }
@@ -81,5 +85,8 @@ namespace GeoScav
         {
             return isReady;
         }
+
+
+
     }
 }

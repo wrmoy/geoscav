@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Maps.MapControl;
 using Microsoft.Phone.Controls;
+using Microsoft.Phone;
 
 namespace GeoScav
 {
@@ -39,10 +40,13 @@ namespace GeoScav
         // boolean that holds whether or not the player has taken a picture
         bool pictureTaken = false;
 
+        string token;
+
         public MapPage()
         {
             InitializeComponent();
-
+    //        this.OnNavigatedTo += new RoutedEventHandler(OnNavigatedTo);
+           
             // Reinitialize the GeoCoordinateWatcher
             watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
             watcher.MovementThreshold = 5;//distance in metres
@@ -57,6 +61,7 @@ namespace GeoScav
             // Start data acquisition
             watcher.Start();
         }
+
 
         #region Event Handlers
 
@@ -144,6 +149,18 @@ namespace GeoScav
             }
         }
 
+
+        protected override void  OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
+        {
+ 	                base.OnNavigatedTo(e);
+
+             if (this.NavigationContext.QueryString.ContainsKey("token"))
+             {
+                 token = this.NavigationContext.QueryString["token"];
+             }
+
+        }
+    
         void ResetMap()
         {
             Location ppLoc = new Location(0, 0);
