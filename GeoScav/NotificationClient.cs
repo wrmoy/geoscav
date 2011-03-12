@@ -1,36 +1,24 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Microsoft.Phone.Notification;
-using System.Windows.Threading;
-using System.Diagnostics;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.Diagnostics;
+using System.Threading;
+using System.Windows;
+using Microsoft.Phone.Notification;
 
 namespace GeoScav
 {
-    public sealed class NotificationClient
+    public delegate void OnNotificationReceived(Object sender, EventArgs e);
+
+    public class NotificationClient
     {
-        #region NotificationReceived
-
+        
         public event EventHandler NotificationReceived;
-
-        protected void OnNotificationReceived()
+        protected virtual void OnNotificationReceived(EventArgs e)
         {
-            EventHandler handler = this.NotificationReceived;
-
-            if (handler != null)
-                handler(this, EventArgs.Empty);
+            if (NotificationReceived != null)
+                NotificationReceived(this, e);
         }
 
-        #endregion
 
         private HttpNotificationChannel httpChannel;
         const string channelName = "GeoScavChannel";
@@ -88,19 +76,18 @@ namespace GeoScav
 
         private void httpChannel_ShellToastNotificationReceived(object sender, NotificationEventArgs e)
         {
-            Deployment.Current.Dispatcher.BeginInvoke(() => this.OnNotificationReceived());
+            Deployment.Current.Dispatcher.BeginInvoke((ThreadStart)( () => {OnNotificationReceived(e);}) );
         }
 
         private void httpChannel_ChannelUriUpdated(object sender, NotificationChannelUriEventArgs e)
         {
-           
-            SubscribeToNotifications();
+           //SubscribeToNotifications();
             Deployment.Current.Dispatcher.BeginInvoke(() => UpdateStatus("Channel created successfully"));
         }
 
         private void httpChannel_HttpNotificationReceived(object sender, HttpNotificationEventArgs e)
         {
-            Deployment.Current.Dispatcher.BeginInvoke(() => this.OnNotificationReceived());
+            Deployment.Current.Dispatcher.BeginInvoke((ThreadStart)( () => {OnNotificationReceived(e);}) );
         }
 
         private void SubscribeToNotifications()
@@ -118,9 +105,10 @@ namespace GeoScav
             {
                 if (httpChannel.IsShellTileBound != true)
                 {
-                    Collection<Uri> uris = new Collection<Uri>();
-                    uris.Add(new Uri("http://localhost:8000/EarthquakeService/tile"));
-                    httpChannel.BindToShellTile(uris);
+                    // useless, never going to update a tile
+                    //Collection<Uri> uris = new Collection<Uri>();
+                    //uris.Add(new Uri("http://localhost:8000/EarthquakeService/tile"));
+                    //httpChannel.BindToShellTile(uris);
                 }
             }
             catch (Exception)

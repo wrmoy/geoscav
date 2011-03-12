@@ -22,6 +22,8 @@ namespace GeoScav
     {
         public status status { get; set; }
         public response response { get; set; }
+        public push push { get; set; }
+        public push.content content { get; set; }
     }
     public class status
     {
@@ -33,6 +35,16 @@ namespace GeoScav
         public string token { get; set; }
         public int distance { get; set; }
         public int angle { get; set; }
+    }
+
+    public class push
+    {
+        public string type { get; set; }
+        public class content
+        {
+            public string action { get; set; }
+            public string url { get; set; }
+        }
     }
 
     public class RESTUtility
@@ -78,6 +90,16 @@ namespace GeoScav
         public response getResponse()
         {
             return deserializedJSON.response;
+        }
+
+        public push getPush()
+        {
+            return deserializedJSON.push;
+        }
+
+        public push.content getContent()
+        {
+            return deserializedJSON.content;
         }
 
         /* Checks if the server response has been received and parsed */

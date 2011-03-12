@@ -26,6 +26,9 @@ namespace GeoScav
         // Bing Maps key
         internal const string Id = "AnXly7FRcq41A5XXI8mcngsEsPndN-gqbzs0BlK6gCwBfnf9ONdGZBgqb6bWSbaQ";
 
+        // Server address
+        internal const string ServerAddr = "http://marrow.cs.ucsb.edu:3000/";
+
         /// <summary>
         /// Constructor for the Application object.
         /// </summary>

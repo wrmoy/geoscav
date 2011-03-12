@@ -93,6 +93,7 @@
                 </Grid>
             </m:Map>
             <Image Name="photoPreview"
+                   Opacity="0.8"
                    Visibility="Collapsed"
                    />
         </Grid>

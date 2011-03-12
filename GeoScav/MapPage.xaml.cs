@@ -1,23 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Device.Location;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Controls.Maps;
-using Microsoft.Phone;
 using Microsoft.Phone.Tasks;
+using Newtonsoft.Json;
 
 namespace GeoScav
 {
@@ -51,6 +43,16 @@ namespace GeoScav
 
         // Credentials
         private readonly CredentialsProvider _credentialsProvider = new ApplicationIdCredentialsProvider(App.Id);
+
+        private enum SendType : int
+        {
+            CheckPointQuery = 0,
+            CheckIn,
+            CheckOut,
+            UploadPic,
+            GetPic,
+            GetN
+        }
 
         public MapPage()
         {
@@ -181,17 +183,15 @@ namespace GeoScav
 
         private void ResetMap()
         {
-            mapMain.SetView(new GeoCoordinate(34.41237775, -119.86041103), 1);
+            mapMain.SetView(new GeoCoordinate(34.41237775, -119.86041103), 15);
             youLayer.Children.Clear();
         }
 
         // Only updates check-in info (cid_dist, cid_angle, curr_cid)
         private void QueryCidLocation()
         {
-            // TODO: update the cid_dist and cid_angle
-            double cid_dist = 0;
-            double cid_angle = 0;
-            AddCheckInPoint(cid_dist, cid_angle);
+            // ask for updates to the cid_dist and cid_angle
+            send(App.ServerAddr + "checkin?cid=" + curr_cid + "&latitude=" + curr_lat + "&longitude=" + curr_long + "&token=" + token, SendType.CheckIn);
         }
 
         // add a new pushpin where the next check-in point is
@@ -249,7 +249,7 @@ namespace GeoScav
             takePicButton.IsEnabled = true;
 
             // do check-in with the server
-            // TODO
+            send(App.ServerAddr + "checkin?cid=" + curr_cid + "&latitude=" + curr_lat + "&longitude=" + curr_long + "&token=" + token, SendType.CheckIn);
         }
 
         // check-out procedures
@@ -258,6 +258,8 @@ namespace GeoScav
             // if the player has taken a picture, then get next checkpoint
             if (pictureTaken)
             {
+                // check out
+                send(App.ServerAddr + "cancel_checkin?cid=" + curr_cid + "&token=" + token, SendType.CheckOut);
                 // update cid and next chkpt
                 curr_cid++;
                 QueryCidLocation();
@@ -287,8 +289,6 @@ namespace GeoScav
             // get picture URL from server
             // display it in a popup?
             // TODO
-            DisplayInfoText("Grabbing image from server...", 3);
-            DisplayImg("http://www.google.com/images/logos/ps_logo2.png", 5);
         }
 
         private void takePic(object sender, RoutedEventArgs e)
@@ -309,6 +309,91 @@ namespace GeoScav
                 // TODO
             }
         }
+
+        // send a url
+        private void send(string url, SendType type)
+        {
+            WebClient c = new WebClient();
+            switch (type)
+            {
+                case SendType.CheckPointQuery:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadCPQCompleted);
+                    break;
+                case SendType.CheckIn:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadCICompleted);
+                    break;
+                case SendType.CheckOut:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadCOCompleted);
+                    break;
+                case SendType.UploadPic:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadUPCompleted);
+                    break;
+                case SendType.GetPic:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadGPCompleted);
+                    break;
+                case SendType.GetN:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadGNCompleted);
+                    break;
+                default:
+                    break;
+            }
+            c.DownloadStringAsync(new Uri(url));
+        }
+
+        #region JSON parsing
+
+        /* parses the JSON response from the server */
+        // CheckPointQuery
+        private void DownloadCPQCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            double cid_dist, cid_angle;
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+            // TODO
+            AddCheckInPoint(cid_dist, cid_angle);
+        }
+
+        /* parses the JSON response from the server */
+        private void DownloadCICompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+            // TODO
+        }
+
+        /* parses the JSON response from the server */
+        private void DownloadCOCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+            // TODO
+        }
+
+        /* parses the JSON response from the server */
+        private void DownloadUPCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+            // TODO
+        }
+
+        /* parses the JSON response from the server */
+        // GetPic
+        private void DownloadGPCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+            // TODO
+
+            DisplayInfoText("Grabbing image from server...", 3);
+            DisplayImg("http://www.google.com/images/logos/ps_logo2.png", 5);
+        }
+
+        /* parses the JSON response from the server */
+        private void DownloadGNCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+            // TODO
+        }
+
+        #endregion
+
+        #region Async helpers
 
         // Async display of info text
         void DisplayInfoText(String text, int durationSec)
@@ -363,5 +448,7 @@ namespace GeoScav
             timer.Interval = new TimeSpan(0, 0, durationSec); // durationSec * 1sec
             timer.Start();
         }
+
+        #endregion
     }
 }
