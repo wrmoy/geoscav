@@ -64,8 +64,7 @@
                             Content="View Picture"
                             Grid.Row="0"
                             Visibility="Collapsed"
-                            Click="getPic"
-                            IsEnabled="False"
+                            Click="showPic"
                     />
                 </Grid>
                 <Grid Name="BottomButtonGrid"

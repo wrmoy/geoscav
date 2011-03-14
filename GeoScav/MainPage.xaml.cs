@@ -13,11 +13,6 @@ namespace GeoScav
 
     public partial class MainPage : PhoneApplicationPage
     {
-
-        private string token = "9bb15023550810858bdd6ea364cfbbdb2749159a"; // TJ's server (heroku)
-        //private string token = "5717a9f6656653f386691c6404ee282718fdb25a"; // Ryan's server (appspot)
-        static string name = "win-name-final";
-        string rid;
         bool isGameOn = false;
         bool isRegistered = true;
 
@@ -31,6 +26,13 @@ namespace GeoScav
         public MainPage()
         {
             InitializeComponent();
+            //GlobalVars.serveraddr = "http://marrow.cs.ucsb.edu:3000/";
+            GlobalVars.serveraddr = "http://cs176b.heroku.com/";
+            //GlobalVars.serveraddr = "http://cs176b.appspot.com/";
+            //GlobalVars.token = "9bb15023550810858bdd6ea364cfbbdb2749159a"; // TJ's server (heroku)
+            //GlobalVars.token = "5717a9f6656653f386691c6404ee282718fdb25a"; // Ryan's server (appspot)
+            Random randgen = new Random();
+            GlobalVars.name = "win-name-final" + randgen.Next(1000);
             NotificationClient.Current.Connect();
             NotificationClient.Current.NotificationReceived += new EventHandler(getNotification);
             NotificationClient.Current.UriUpdated += new EventHandler(setUri);
@@ -39,7 +41,7 @@ namespace GeoScav
 
         private void openMap(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Uri(string.Format("/MapPage.xaml?token={0}", token), UriKind.Relative));
+            NavigationService.Navigate(new Uri("/MapPage.xaml", UriKind.Relative));
         }
 
         private void registerPhone(object sender, RoutedEventArgs e)
@@ -49,7 +51,7 @@ namespace GeoScav
             //System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
             //string name = enc.GetString((byte[])phoneID, 0, 20);
 
-            send(App.ServerAddr + "register?name=" + name + "&registration_id=" + rid + "&phonetype=windows", SendType.Registration);
+            send(GlobalVars.serveraddr + "register?name=" + GlobalVars.name + "&registration_id=" + GlobalVars.rid + "&phonetype=windows", SendType.Registration);
             if (isRegistered && isGameOn)
                 startButton.IsEnabled = true;
         }
@@ -60,10 +62,8 @@ namespace GeoScav
             HttpNotificationEventArgs eargs = (HttpNotificationEventArgs)e;
             StreamReader reader = new StreamReader(eargs.Notification.Body);
             string bodytext = reader.ReadToEnd();
-            DisplayInfoText(bodytext, 30);
+            DisplayInfoText(bodytext, 60);
             // Parse HTTP request
-            //WebClient c = new WebClient();
-            
             string[] parameters = bodytext.Split('&');
             foreach (string kv in parameters) 
             {
@@ -82,9 +82,9 @@ namespace GeoScav
         private void setUri(object s, EventArgs e)
         {
             NotificationChannelUriEventArgs eargs = (NotificationChannelUriEventArgs)e;
-            rid = eargs.ChannelUri.ToString();
-            if (token != null)
-                send(App.ServerAddr + "update_reg_id?token=" + token + "&registration_id=" + rid, SendType.UpdateRegid);
+            GlobalVars.rid = eargs.ChannelUri.ToString();
+            if (GlobalVars.token != null)
+                send(GlobalVars.serveraddr + "update_reg_id?token=" + GlobalVars.token + "&registration_id=" + GlobalVars.rid, SendType.UpdateRegid);
             registerButton.IsEnabled = true;
         }
 
@@ -111,13 +111,16 @@ namespace GeoScav
 
             if (deserializedJSON.status.code == 0)
             {
-                token = deserializedJSON.response.token;
+                GlobalVars.token = deserializedJSON.response.token;
                 isRegistered = true;
+            }
+            else if (deserializedJSON.status.code == 99)
+            {
+                send(GlobalVars.serveraddr + "update_reg_id?GlobalVars.token=" + GlobalVars.token + "&registration_id=" + GlobalVars.rid, SendType.UpdateRegid);
             }
             else
             {
                 DisplayInfoText("Error (" + deserializedJSON.status.code + "): " + deserializedJSON.status.message, 5);
-
             }
             if (isRegistered && isGameOn)
                 startButton.IsEnabled = true;
@@ -134,7 +137,6 @@ namespace GeoScav
             else
             {
                 DisplayInfoText("Error (" + deserializedJSON.status.code + "): " + deserializedJSON.status.message, 5);
-
             }
             if (isRegistered && isGameOn)
                 startButton.IsEnabled = true;
