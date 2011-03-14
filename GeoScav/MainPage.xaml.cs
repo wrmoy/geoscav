@@ -4,7 +4,6 @@ using System.Net;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Phone.Controls;
-using Microsoft.Phone.Info;
 using Microsoft.Phone.Notification;
 using Newtonsoft.Json;
 
@@ -15,19 +14,27 @@ namespace GeoScav
     public partial class MainPage : PhoneApplicationPage
     {
 
-        private string token;
-        static int testnum = 0;
-        static string name = "bdwm-win-test-name-test-" + testnum;
+        private string token = "9bb15023550810858bdd6ea364cfbbdb2749159a"; // TJ's server (heroku)
+        //private string token = "5717a9f6656653f386691c6404ee282718fdb25a"; // Ryan's server (appspot)
+        static string name = "win-name-final";
         string rid;
         bool isGameOn = false;
-        bool isRegistered = false;
+        bool isRegistered = true;
+
+        private enum SendType : int
+        {
+            Registration = 0,
+            UpdateRegid
+        }
 
         // Constructor
         public MainPage()
         {
             InitializeComponent();
-            rid = NotificationClient.Current.Connect();
+            NotificationClient.Current.Connect();
             NotificationClient.Current.NotificationReceived += new EventHandler(getNotification);
+            NotificationClient.Current.UriUpdated += new EventHandler(setUri);
+            DisplayInfoText("Bootstrapping...", 3);
         }
 
         private void openMap(object sender, RoutedEventArgs e)
@@ -42,13 +49,7 @@ namespace GeoScav
             //System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
             //string name = enc.GetString((byte[])phoneID, 0, 20);
 
-            // should actually wait for "GAMEON" message before enabling the button
-            // but for now, just turn it on
-            startButton.IsEnabled = true;
-
-            Random randgen = new Random();
-            send(App.ServerAddr + "register?name=" + name + "&registration_id=" + rid + "&phonetype=windows");
-            //send(App.ServerAddr + "register?name=" + name + "&registration_id=" + rid + "&phonetype=windows");
+            send(App.ServerAddr + "register?name=" + name + "&registration_id=" + rid + "&phonetype=windows", SendType.Registration);
             if (isRegistered && isGameOn)
                 startButton.IsEnabled = true;
         }
@@ -57,39 +58,84 @@ namespace GeoScav
         {
             // Convert to string
             HttpNotificationEventArgs eargs = (HttpNotificationEventArgs)e;
-            BinaryReader reader = new BinaryReader(eargs.Notification.Body, System.Text.Encoding.UTF8);
-            string bodytext = reader.ReadString();
-
-            // Parse JSON
-            var deserializedJSON = JsonConvert.DeserializeObject<item>(bodytext);
-            if (deserializedJSON.push.type != null && deserializedJSON.push.type == "GAMEON")
+            StreamReader reader = new StreamReader(eargs.Notification.Body);
+            string bodytext = reader.ReadToEnd();
+            DisplayInfoText(bodytext, 30);
+            // Parse HTTP request
+            //WebClient c = new WebClient();
+            
+            string[] parameters = bodytext.Split('&');
+            foreach (string kv in parameters) 
             {
-                isGameOn = true;
-                DisplayInfoText("GAME ON", 5);
+                string[] temp = kv.Split('=');
+                if (temp[0] == "type" && temp[1] == "GAMEON")
+                {
+                    isGameOn = true;
+                    DisplayInfoText("GAME ON!", 5);
+                }
             }
-
+            //var decodedUrl = HttpUtility.UrlDecode(bodytext);
             if (isRegistered && isGameOn)
                 startButton.IsEnabled = true;
         }
 
-        public void send(string url)
+        private void setUri(object s, EventArgs e)
+        {
+            NotificationChannelUriEventArgs eargs = (NotificationChannelUriEventArgs)e;
+            rid = eargs.ChannelUri.ToString();
+            if (token != null)
+                send(App.ServerAddr + "update_reg_id?token=" + token + "&registration_id=" + rid, SendType.UpdateRegid);
+            registerButton.IsEnabled = true;
+        }
+
+        private void send(string url, SendType type)
         {
             WebClient c = new WebClient();
-            c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(DownloadStringCompleted);
+            switch (type)
+            {
+                case SendType.Registration:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(RegistrationCompleted);
+                    break;
+                case SendType.UpdateRegid:
+                    c.DownloadStringCompleted += new DownloadStringCompletedEventHandler(UpdateRegidCompleted);
+                    break;
+                default: break;
+            }
             c.DownloadStringAsync(new Uri(url));
         }
 
         /* parses the JSON response from the server */
-        public void DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        private void RegistrationCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
-
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
 
-            Code.Text = (deserializedJSON.status.code).ToString();
-            Message.Text = deserializedJSON.status.message;
-            Token.Text = deserializedJSON.response.token;
-            token = deserializedJSON.response.token;
-            isRegistered = true;
+            if (deserializedJSON.status.code == 0)
+            {
+                token = deserializedJSON.response.token;
+                isRegistered = true;
+            }
+            else
+            {
+                DisplayInfoText("Error (" + deserializedJSON.status.code + "): " + deserializedJSON.status.message, 5);
+
+            }
+            if (isRegistered && isGameOn)
+                startButton.IsEnabled = true;
+        }
+
+        private void UpdateRegidCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
+
+            if (deserializedJSON.status.code == 0)
+            {
+                isRegistered = true;
+            }
+            else
+            {
+                DisplayInfoText("Error (" + deserializedJSON.status.code + "): " + deserializedJSON.status.message, 5);
+
+            }
             if (isRegistered && isGameOn)
                 startButton.IsEnabled = true;
         }
@@ -97,7 +143,7 @@ namespace GeoScav
         #region Display Helpers
 
         // Async display of info text
-        public void DisplayInfoText(String text, int durationSec)
+        private void DisplayInfoText(String text, int durationSec)
         {
             infoText.Text = text;
             infoText.Visibility = System.Windows.Visibility.Visible;

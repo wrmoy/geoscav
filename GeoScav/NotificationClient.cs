@@ -19,6 +19,12 @@ namespace GeoScav
                 NotificationReceived(this, e);
         }
 
+        public event EventHandler UriUpdated;
+        protected virtual void OnUriUpdated(EventArgs e)
+        {
+            if (UriUpdated != null)
+                UriUpdated(this, e);
+        }
 
         private HttpNotificationChannel httpChannel;
         const string channelName = "GeoScavChannel";
@@ -31,7 +37,7 @@ namespace GeoScav
             get { return current; }
         }
 
-        public string Connect()
+        public void Connect()
         {
             try
             {
@@ -55,8 +61,6 @@ namespace GeoScav
             {
                 Deployment.Current.Dispatcher.BeginInvoke(() => UpdateStatus("Channel error: " + ex.Message));
             }
-
-            return httpChannel.ChannelUri.ToString();
         }
 
 
@@ -82,7 +86,7 @@ namespace GeoScav
         private void httpChannel_ChannelUriUpdated(object sender, NotificationChannelUriEventArgs e)
         {
            //SubscribeToNotifications();
-            Deployment.Current.Dispatcher.BeginInvoke(() => UpdateStatus("Channel created successfully"));
+            Deployment.Current.Dispatcher.BeginInvoke((ThreadStart)(() => { OnUriUpdated(e); }));
         }
 
         private void httpChannel_HttpNotificationReceived(object sender, HttpNotificationEventArgs e)

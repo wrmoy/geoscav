@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Controls.Maps;
+using Microsoft.Phone.Notification;
 using Microsoft.Phone.Tasks;
 using Newtonsoft.Json;
 
@@ -25,8 +26,9 @@ namespace GeoScav
         private double curr_lat;
         private double curr_long;
 
-        // current CID
+        // current and last CIDs
         private int curr_cid = 1;
+        private int last_cid = -1;
 
         // coords of next check-in point
         private double cid_lat;
@@ -57,6 +59,11 @@ namespace GeoScav
         public MapPage()
         {
             InitializeComponent();
+            // Make sure notification client is connected
+            NotificationClient.Current.Connect();
+            NotificationClient.Current.NotificationReceived += new EventHandler(getNotification);
+            NotificationClient.Current.UriUpdated += new EventHandler(setUri);
+
             // Reinitialize the GeoCoordinateWatcher
             watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
             watcher.MovementThreshold = 5;//distance in metres
@@ -71,6 +78,8 @@ namespace GeoScav
             // Ask for next check-in point
             DisplayInfoText("Retrieving first checkpoint", 10);
             QueryCidLocationWithWait(10);
+            // Ask for number of checkpoints
+            send(App.ServerAddr + "get_n", SendType.GetN);
         }
 
 
@@ -191,7 +200,7 @@ namespace GeoScav
         private void QueryCidLocation()
         {
             // ask for updates to the cid_dist and cid_angle
-            send(App.ServerAddr + "checkin?cid=" + curr_cid + "&latitude=" + curr_lat + "&longitude=" + curr_long + "&token=" + token, SendType.CheckIn);
+            send(App.ServerAddr + "query?cid=" + curr_cid + "&latitude=" + curr_lat + "&longitude=" + curr_long + "&token=" + token, SendType.CheckIn);
         }
 
         // add a new pushpin where the next check-in point is
@@ -243,11 +252,6 @@ namespace GeoScav
         // check-in procedures
         private void checkIn(object sender, RoutedEventArgs e)
         {
-            checkInButton.Visibility = System.Windows.Visibility.Collapsed;
-            checkOutButton.Visibility = System.Windows.Visibility.Visible;
-            getPicButton.IsEnabled = true;
-            takePicButton.IsEnabled = true;
-
             // do check-in with the server
             send(App.ServerAddr + "checkin?cid=" + curr_cid + "&latitude=" + curr_lat + "&longitude=" + curr_long + "&token=" + token, SendType.CheckIn);
         }
@@ -255,33 +259,8 @@ namespace GeoScav
         // check-out procedures
         private void checkOut(object sender, RoutedEventArgs e)
         {
-            // if the player has taken a picture, then get next checkpoint
-            if (pictureTaken)
-            {
-                // check out
-                send(App.ServerAddr + "cancel_checkin?cid=" + curr_cid + "&token=" + token, SendType.CheckOut);
-                // update cid and next chkpt
-                curr_cid++;
-                QueryCidLocation();
-                // close and reset the buttons
-                checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
-                getPicButton.Visibility = System.Windows.Visibility.Collapsed;
-                takePicButton.Visibility = System.Windows.Visibility.Collapsed;
-                getPicButton.IsEnabled = false;
-                takePicButton.IsEnabled = false;
-                // reset the bool
-                pictureTaken = false;
-            }
-            else // restart the "asking for check-in" process
-            {
-                checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
-                checkInButton.Visibility = System.Windows.Visibility.Visible;
-                getPicButton.IsEnabled = false;
-                takePicButton.IsEnabled = false;
-                ProximityCheck();
-            }
-            // and then check out from the server
-            //
+            // check out
+            send(App.ServerAddr + "cancel_checkin?cid=" + curr_cid + "&token=" + token, SendType.CheckOut);
         }
 
         private void getPic(object sender, RoutedEventArgs e)
@@ -340,6 +319,37 @@ namespace GeoScav
             c.DownloadStringAsync(new Uri(url));
         }
 
+        #region Notification handling
+
+        private void getNotification(object s, EventArgs e)
+        {
+            // Convert to string
+            HttpNotificationEventArgs eargs = (HttpNotificationEventArgs)e;
+            StreamReader reader = new StreamReader(eargs.Notification.Body);
+            string bodytext = reader.ReadToEnd();
+            DisplayInfoText(bodytext, 30);
+            // Parse HTTP request
+            //WebClient c = new WebClient();
+
+            string[] parameters = bodytext.Split('&');
+            foreach (string kv in parameters)
+            {
+                string[] temp = kv.Split('=');
+            }
+            //var decodedUrl = HttpUtility.UrlDecode(bodytext);
+        }
+
+        private void setUri(object s, EventArgs e)
+        {
+            NotificationChannelUriEventArgs eargs = (NotificationChannelUriEventArgs)e;
+            rid = eargs.ChannelUri.ToString();
+            if (token != null)
+                send(App.ServerAddr + "update_reg_id?token=" + token + "&registration_id=" + rid, SendType.UpdateRegid);
+            registerButton.IsEnabled = true;
+        }
+
+        #endregion
+
         #region JSON parsing
 
         /* parses the JSON response from the server */
@@ -348,25 +358,83 @@ namespace GeoScav
         {
             double cid_dist, cid_angle;
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
-            // TODO
-            AddCheckInPoint(cid_dist, cid_angle);
+            if (deserializedJSON.status.code == 0)
+            {
+                cid_dist = deserializedJSON.response.distance;
+                cid_angle = deserializedJSON.response.angle;
+                AddCheckInPoint(cid_dist, cid_angle);
+            }
+            else
+                DisplayInfoText("Error: " + deserializedJSON.status.message, 5);
         }
 
         /* parses the JSON response from the server */
+        // CheckIn
         private void DownloadCICompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
-            // TODO
+            if (deserializedJSON.status.code == 0)
+            {
+                checkInButton.Visibility = System.Windows.Visibility.Collapsed;
+                checkOutButton.Visibility = System.Windows.Visibility.Visible;
+                getPicButton.IsEnabled = true;
+                takePicButton.IsEnabled = true;
+
+                DisplayInfoText("Hint: " + deserializedJSON.response.hint, 5);
+            }
+            else
+                DisplayInfoText("Error: " + deserializedJSON.status.message, 5);
         }
 
         /* parses the JSON response from the server */
+        // CheckOut
         private void DownloadCOCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
-            // TODO
+            if (deserializedJSON.status.code == 0)
+            {
+                DisplayInfoText("Checked out", 3);
+
+                // if the player has taken a picture, then get next checkpoint
+                if (pictureTaken)
+                {
+                    // update cid and next chkpt
+                    curr_cid++;
+                    if (curr_cid > last_cid)
+                    {
+                        DisplayInfoText("Congratulations, you finished!", 10);
+                        checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
+                        checkInButton.Visibility = System.Windows.Visibility.Collapsed;
+                        getPicButton.Visibility = System.Windows.Visibility.Collapsed;
+                        takePicButton.Visibility = System.Windows.Visibility.Collapsed;
+                        return;
+                    }
+                    QueryCidLocation();
+                    // close and reset the buttons
+                    checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
+                    getPicButton.Visibility = System.Windows.Visibility.Collapsed;
+                    takePicButton.Visibility = System.Windows.Visibility.Collapsed;
+                    getPicButton.IsEnabled = false;
+                    takePicButton.IsEnabled = false;
+                    // reset the bool
+                    pictureTaken = false;
+                }
+                else // restart the "asking for check-in" process
+                {
+                    checkOutButton.Visibility = System.Windows.Visibility.Collapsed;
+                    checkInButton.Visibility = System.Windows.Visibility.Visible;
+                    getPicButton.IsEnabled = false;
+                    takePicButton.IsEnabled = false;
+                    ProximityCheck();
+                }
+
+            }
+            else
+                DisplayInfoText("Error: " + deserializedJSON.status.message, 5);
         }
 
         /* parses the JSON response from the server */
+        // UploadPicture
         private void DownloadUPCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
@@ -379,7 +447,6 @@ namespace GeoScav
         {
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
             // TODO
-
             DisplayInfoText("Grabbing image from server...", 3);
             DisplayImg("http://www.google.com/images/logos/ps_logo2.png", 5);
         }
@@ -388,7 +455,11 @@ namespace GeoScav
         private void DownloadGNCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             var deserializedJSON = JsonConvert.DeserializeObject<item>(e.Result);
-            // TODO
+
+            if (deserializedJSON.status.code == 0)
+                last_cid = deserializedJSON.response.n;
+            else
+                DisplayInfoText("Error: " + deserializedJSON.status.message, 5);
         }
 
         #endregion

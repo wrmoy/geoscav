@@ -40,11 +40,11 @@
                 <RowDefinition Height="189*" />
             </Grid.RowDefinitions>
             
-            <Button Content="Register" Grid.Row="0" Height="72" Name="registerButton" Click="registerPhone"/>
+            <Button Content="Register" Grid.Row="0" Height="72" Name="registerButton" Click="registerPhone" IsEnabled="False"/>
             <Button Content="Start Game" Grid.Row="1" Height="72"  Name="startButton" Click="openMap" IsEnabled="False"/>
-            <TextBlock Text="Code" Grid.Row="2" Name="Code" HorizontalAlignment="Center"/>
+            <!--<TextBlock Text="Code" Grid.Row="2" Name="Code" HorizontalAlignment="Center"/>
             <TextBlock Text="Message" Grid.Row="3" Name="Message" HorizontalAlignment="Center"/>
-            <TextBlock Text="Token" Grid.Row="4" Name="Token" HorizontalAlignment="Center"/>
+            <TextBlock Text="Token" Grid.Row="4" Name="Token" HorizontalAlignment="Center"/>-->
             <TextBlock Name="infoText"
                        Grid.Row="6"
                        Foreground="White"
@@ -53,6 +53,7 @@
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
                        Visibility="Collapsed"
+                       TextWrapping="Wrap"
              />
             
         </Grid>

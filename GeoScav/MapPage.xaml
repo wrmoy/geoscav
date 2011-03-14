@@ -53,7 +53,22 @@
                            Margin="0 50 0 0"
                            Visibility="Collapsed"
                 />
-                <Grid Name="ButtonGrid"
+                <Grid Name="TopButtonGrid"
+                      VerticalAlignment="Top"
+                      Background="Transparent">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Button Name="getPicButton"
+                            Content="View Picture"
+                            Grid.Row="0"
+                            Visibility="Collapsed"
+                            Click="getPic"
+                            IsEnabled="False"
+                    />
+                </Grid>
+                <Grid Name="BottomButtonGrid"
                       VerticalAlignment="Bottom"
                       Background="Transparent">
                     <Grid.RowDefinitions>
@@ -76,16 +91,9 @@
                             Click="checkOut"
                             IsEnabled="True"
                     />
-                    <Button Name="getPicButton"
-                            Content="Need a Hint?"
-                            Grid.Row="1"
-                            Visibility="Collapsed"
-                            Click="getPic"
-                            IsEnabled="False"
-                    />
                     <Button Name="takePicButton"
                             Content="Take a Picture"
-                            Grid.Row="2"
+                            Grid.Row="1"
                             Visibility="Collapsed"
                             Click="takePic"
                             IsEnabled="False"
